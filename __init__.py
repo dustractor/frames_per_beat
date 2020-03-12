@@ -42,7 +42,7 @@ def is_onbeat(context):
 def beat_info_display(layout,context):
     layout.prop(context.scene,"beats_per_minute",text="BPM")
     layout.label(text="FPB:%s"%context.scene.frames_per_beat)
-    layout.box().row().label(text=" x"[is_onbeat(context)])
+    layout.box().row().label(text="",icon=("KEYFRAME","KEYFRAME_HLT")[is_onbeat(context)])
 
 def timeline_drawfunc(self,context):
     self.layout.prop(context.scene,"frames_per_beat_x",icon="TIME",text="")
