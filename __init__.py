@@ -37,13 +37,17 @@ def _(c=None,r=[]):
 def is_onbeat(context):
     frames_from_beat0 = (context.scene.frame_current-context.scene.frame_start) 
     (ign,modf) =  divmod(frames_from_beat0,context.scene.frames_per_beat)
-    return math.isclose(modf,0,rel_tol=modf/4)
+    return math.isclose(modf,0,rel_tol=modf/context.scene.time_divisions)
 
 def beat_info_display(layout,context):
+    layout.prop(context.scene,"beats_per_minute",text="BPM")
+    layout.label(text="FPB:%s"%context.scene.frames_per_beat)
     layout.box().row().label(text=" x"[is_onbeat(context)])
 
 def timeline_drawfunc(self,context):
-    beat_info_display(self.layout,context)
+    self.layout.prop(context.scene,"frames_per_beat_x",icon="TIME",text="")
+    if context.scene.frames_per_beat_x:
+        beat_info_display(self.layout,context)
 
 @_
 class FPB_PT_beat_info(bpy.types.Panel):
@@ -54,9 +58,11 @@ class FPB_PT_beat_info(bpy.types.Panel):
 
     def draw(self,context):
         layout = self.layout
+        layout.prop(context.scene,"time_divisions")
         layout.prop(context.scene,"beats_per_minute")
         layout.prop(context.scene,"frames_per_beat")
         layout.prop(context.scene.render,"fps")
+
 
 
 def calc_fpb(self):
@@ -69,12 +75,17 @@ def register():
     list(map(bpy.utils.register_class,_()))
     bpy.types.Scene.beats_per_minute = bpy.props.FloatProperty(default=144.0)
     bpy.types.Scene.frames_per_beat = bpy.props.FloatProperty(get=calc_fpb)
+    bpy.types.Scene.frames_per_beat_x = bpy.props.BoolProperty(default=True)
+    bpy.types.Scene.time_divisions = bpy.props.IntProperty(min=2,default=4,soft_max=16)
     bpy.types.TIME_HT_editor_buttons.append(timeline_drawfunc)
+
 
 def unregister():
     bpy.types.TIME_HT_editor_buttons.remove(timeline_drawfunc)
     del bpy.types.Scene.beats_per_minute
     del bpy.types.Scene.frames_per_beat
+    del bpy.types.Scene.frames_per_beat_x
+    del bpy.types.Scene.time_divisions
     list(map(bpy.utils.unregister_class,_()))
 
 
